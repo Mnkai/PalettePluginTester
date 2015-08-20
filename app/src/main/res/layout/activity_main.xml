@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Write Tweet"
-        android:id="@+id/writeTweetBtn"
+        android:id="@+id/multiFunctionalButton"
         android:layout_below="@+id/serviceAPIStatusTextView"
         android:layout_centerHorizontal="true"
         android:onClick="onClick"

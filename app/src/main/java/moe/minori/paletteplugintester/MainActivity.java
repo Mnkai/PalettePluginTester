@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
 
     TextView statusTextView;
     TextView receiverStatusTextView;
-    Button sendTweetBtn;
+    Button multiFunctionalButton;
 
     AvailabilityCallbackListener cbl = new AvailabilityCallbackListener();
     BroadcastReceiver waitUntilAPIResponds;
@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         statusTextView = (TextView) findViewById(R.id.serviceAPIStatusTextView);
         receiverStatusTextView = (TextView) findViewById(R.id.serviceAPIreceivedTextView);
-        sendTweetBtn = (Button) findViewById(R.id.writeTweetBtn);
+        multiFunctionalButton = (Button) findViewById(R.id.multiFunctionalButton);
     }
 
     @Override
@@ -71,11 +71,18 @@ public class MainActivity extends AppCompatActivity {
         if ( !isReady )
             return;
 
-        if (v == sendTweetBtn) {
+        if (v == multiFunctionalButton) {
+            /*
             sendBroadcast(new Intent(Consts.REQ_WRITE_TWEET)
                     .putExtra("DATA", "Testing Tweet on Palette API\n" +
                             "Current time is: " + Calendar.getInstance().getTime().toString() + "\n" +
                             "#PaletteAPI" ),
+                    Consts.EXTERNAL_BROADCAST_API);
+
+                    */
+
+            sendBroadcast(new Intent("palette.twitter.externalBroadcast.follow.user")
+            .putExtra("USERLONG", 3248397295L),
                     Consts.EXTERNAL_BROADCAST_API);
         }
     }
@@ -129,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
         };
 
         // For performance, you may register receiver on separate thread (handler)
-        registerReceiver(receiver, filter);
+        registerReceiver(receiver, filter, Consts.EXTERNAL_BROADCAST_API, null);
 
         // You must supply EXTERNAL_BROADCAST_API data in order to communicate successfully
         // OS may require user to manually agree on such permission when installing
@@ -206,39 +213,44 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter filter = new IntentFilter();
 
         filter.addAction(Consts.NOTIFY_NEW_STATUS);
+        filter.addAction("palette.twitter.externalBroadcast.notify.follower");
 
         registerReceiver(allAPIReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
 
-                StringBuilder builder = new StringBuilder();
+                if (intent.getAction().equals(Consts.NOTIFY_NEW_STATUS)) {
+                    StringBuilder builder = new StringBuilder();
 
-                builder.append("Tweet From: ");
-                builder.append(intent.getStringExtra("FROMTEXT"));
-                builder.append("(");
-                builder.append(intent.getStringExtra("FROMTEXTSCREEN"));
-                builder.append((") "));
-                builder.append(intent.getLongExtra("FROMLONG", -1));
-                builder.append("\n");
-                builder.append("Content: ");
-                builder.append(intent.getStringExtra("TEXT"));
-                builder.append("\n");
-                builder.append("In reply to: ");
-                builder.append(intent.getLongExtra("REPLY_TO", -1));
+                    builder.append("Tweet From: ");
+                    builder.append(intent.getStringExtra("FROMTEXT"));
+                    builder.append("(");
+                    builder.append(intent.getStringExtra("FROMTEXTSCREEN"));
+                    builder.append((") "));
+                    builder.append(intent.getLongExtra("FROMLONG", -1));
+                    builder.append("\n");
+                    builder.append("Content: ");
+                    builder.append(intent.getStringExtra("TEXT"));
+                    builder.append("\n");
+                    builder.append("In reply to: ");
+                    builder.append(intent.getLongExtra("REPLY_TO", -1));
 
-                try
-                {
-                    receiverStatusTextView.setText(
-                            builder.toString()
-                    );
+                    try {
+                        receiverStatusTextView.setText(
+                                builder.toString()
+                        );
+                    } catch (Exception e) {
+                        // ignore
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    // ignore
+                    receiverStatusTextView.setText(intent.getLongExtra("USERLONG", -1) + " followed you");
                 }
+
 
             }
-        }, filter);
+        }, filter, Consts.EXTERNAL_BROADCAST_API, null);
     }
 
 }
